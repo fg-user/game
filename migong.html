@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧩 迷宫冒险</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #f0f9f0;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+            touch-action: none; /* 防止触摸干扰 */
+        }
+        h1 {
+            color: #2d5a2d;
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        .maze {
+            display: grid;
+            grid-template-columns: repeat(10, 40px); /* 10x10迷宫 */
+            grid-template-rows: repeat(10, 40px);
+            gap: 0;
+            margin: 20px auto;
+            border: 2px solid #2d5a2d;
+            width: fit-content;
+        }
+        .cell {
+            width: 40px;
+            height: 40px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+        }
+        .wall {
+            background-color: #2d5a2d;
+        }
+        .player {
+            background-color: #4CAF50;
+            border-radius: 50%;
+        }
+        .end {
+            background-color: #FFD700; /* 金色终点 */
+        }
+        .instructions {
+            font-size: 18px;
+            color: #2d5a2d;
+            margin: 10px 0;
+        }
+        .controls {
+            display: grid;
+            grid-template-areas: 
+                ". up ."
+                "left down right";
+            grid-template-columns: 60px 60px 60px;
+            grid-template-rows: 60px 60px;
+            gap: 10px;
+            margin: 20px auto;
+            max-width: 200px;
+        }
+        .control-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .control-btn:hover {
+            background: #45a049;
+        }
+        .up { grid-area: up; }
+        .left { grid-area: left; }
+        .down { grid-area: down; }
+        .right { grid-area: right; }
+        .success-message {
+            font-size: 28px;
+            color: #2d5a2d;
+            margin: 30px 0;
+            display: none;
+        }
+        .restart-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 24px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧩 迷宫冒险</h1>
+    <div class="instructions">使用箭头键（↑↓←→）或下方按钮移动角色，找到出口！</div>
+    <div class="maze" id="maze"></div>
+    <div class="controls">
+        <button class="control-btn up" onclick="movePlayer(0, -1)">↑</button>
+        <button class="control-btn left" onclick="movePlayer(-1, 0)">←</button>
+        <button class="control-btn down" onclick="movePlayer(0, 1)">↓</button>
+        <button class="control-btn right" onclick="movePlayer(1, 0)">→</button>
+    </div>
+    <div class="success-message" id="successMessage">
+        🎉 恭喜通关！ 🎉<br>
+        <button class="restart-btn" onclick="restartGame()">再玩一次</button>
+    </div>
+
+    <audio id="moveSound" src="https://assets.mixkit.co/sfx/preview/mixkit-player-jumping-in-a-video-game-2043.mp3"></audio>
+    <audio id="winSound" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.wav"></audio>
+
+    <script>
+        // 修正后的迷宫布局：0=空地, 1=墙, S=起点, E=终点（确保有通往出口的路径）
+        const mazeLayout = [
+            ['S', 0, 0, 0, 0, 1, 1, 1, 1, 1],
+            [1, 0, 1, 1, 0, 0, 0, 0, 0, 1],
+            [0, 0, 1, 1, 1, 1, 1, 1, 0, 0],
+            [0, 1, 1, 0, 0, 0, 0, 1, 0, 1],
+            [0, 0, 0, 0, 1, 1, 0, 0, 0, 1],
+            [1, 1, 1, 0, 1, 1, 1, 1, 0, 1],
+            [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+            [0, 1, 1, 1, 1, 1, 0, 1, 1, 0],
+            [0, 0, 0, 0, 0, 1, 0, 0, 1, 0],
+            [1, 1, 1, 1, 0, 0, 0, 0, 0, 'E']
+        ];
+
+        let playerPosition = { x: 0, y: 0 }; // 初始位置
+        let mazeGrid = []; // 存储DOM元素
+
+        function generateMaze() {
+            const mazeContainer = document.getElementById('maze');
+            mazeContainer.innerHTML = '';
+            mazeGrid = [];
+
+            for (let y = 0; y < mazeLayout.length; y++) {
+                mazeGrid[y] = [];
+                for (let x = 0; x < mazeLayout[y].length; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+
+                    if (mazeLayout[y][x] === 1) {
+                        cell.classList.add('wall');
+                    } else if (mazeLayout[y][x] === 'E') {
+                        cell.classList.add('end');
+                    } else if (mazeLayout[y][x] === 'S') {
+                        cell.classList.add('player');
+                        playerPosition = { x, y };
+                    }
+
+                    mazeContainer.appendChild(cell);
+                    mazeGrid[y][x] = cell;
+                }
+            }
+        }
+
+        function movePlayer(dx, dy) {
+            const newX = playerPosition.x + dx;
+            const newY = playerPosition.y + dy;
+
+            // 检查边界和墙壁
+            if (newX >= 0 && newX < mazeLayout[0].length &&
+                newY >= 0 && newY < mazeLayout.length &&
+                mazeLayout[newY][newX] !== 1) {
+
+                // 移除旧位置的玩家类
+                mazeGrid[playerPosition.y][playerPosition.x].classList.remove('player');
+
+                // 更新位置
+                playerPosition = { x: newX, y: newY };
+                mazeGrid[newY][newX].classList.add('player');
+
+                // 播放移动音效
+                document.getElementById('moveSound').play();
+
+                // 检查是否到达终点
+                if (mazeLayout[newY][newX] === 'E') {
+                    document.getElementById('winSound').play();
+                    document.getElementById('successMessage').style.display = 'block';
+                    document.removeEventListener('keydown', handleKeydown);
+                    // 禁用触摸按钮（可选，如果需要）
+                }
+            }
+        }
+
+        function handleKeydown(event) {
+            switch (event.key) {
+                case 'ArrowUp': movePlayer(0, -1); break;
+                case 'ArrowDown': movePlayer(0, 1); break;
+                case 'ArrowLeft': movePlayer(-1, 0); break;
+                case 'ArrowRight': movePlayer(1, 0); break;
+            }
+        }
+
+        function startGame() {
+            generateMaze();
+            document.addEventListener('keydown', handleKeydown);
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        function restartGame() {
+            startGame();
+        }
+
+        // 初始化
+        startGame();
+    </script>
+</body>
+</html>

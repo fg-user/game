@@ -94,6 +94,7 @@
     <div class="options" id="options"></div>
     <div class="success-message" id="successMessage">
         🎉 挑战成功！ 🎉<br>
+        <span id="errorCountDisplay"></span><br>
         <button class="restart-btn" onclick="restartGame()">再玩一次</button>
     </div>
 
@@ -174,25 +175,30 @@
         let currentQuestions = [];
         let currentQuestionIndex = 0;
         let correctAnswer = '';
+        let errorCount = 0; // 新增：记录错误次数
         let synth = window.speechSynthesis;
 
         function speak(text) {
             if (synth.speaking) synth.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'zh-CN';
-            utterance.rate = 0.9;
+            utterance.rate = 0.7; // 调整为更慢的速度（原0.9，现0.7），以提高清晰度
+            utterance.pitch = 1.0; // 默认音高，可调整为稍高以提高清晰度
+            utterance.volume = 1.0; // 最大音量
             synth.speak(utterance);
         }
 
         function startGame() {
             currentQuestions = shuffleArray([...gameData]).slice(0, 8);
             currentQuestionIndex = 0;
+            errorCount = 0; // 重置错误计数
             showQuestion();
         }
 
         function showQuestion() {
             if (currentQuestionIndex >= currentQuestions.length) {
                 document.getElementById('successMessage').style.display = 'block';
+                document.getElementById('errorCountDisplay').textContent = `你错了${errorCount}题（总共${currentQuestions.length}题）`;
                 return;
             }
 
@@ -219,8 +225,8 @@
                 optionsContainer.appendChild(btn);
             });
 
-            // 自动朗读题目
-            speak(q.pinyin);
+            // 自动朗读题目（改为朗读汉字）
+            speak(q.char);
         }
 
         function checkAnswer(selectedChar, btnElement) {
@@ -237,6 +243,7 @@
             } else {
                 btnElement.classList.add('wrong');
                 document.getElementById('wrongSound').play();
+                errorCount++; // 记录错误
                 // 高亮显示正确答案
                 options.forEach(opt => {
                     if (opt.textContent === correctAnswer) {
@@ -267,7 +274,7 @@
         // 初始化
         document.getElementById('speakBtn').onclick = function() {
             if (currentQuestions[currentQuestionIndex]) {
-                speak(currentQuestions[currentQuestionIndex].pinyin);
+                speak(currentQuestions[currentQuestionIndex].char); // 改为朗读汉字
             }
         };
 
