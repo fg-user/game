@@ -85,12 +85,27 @@
             cursor: pointer;
             margin-top: 20px;
         }
+        /* 新增样式：开关 */
+        .toggle-container {
+            margin: 10px auto;
+            font-size: 18px;
+            color: #2d5a2d;
+        }
+        .toggle-container input {
+            margin-right: 8px;
+            transform: scale(1.2);
+        }
     </style>
 </head>
 <body>
     <h1>🎧 纯听音选汉字</h1>
     <div class="progress" id="progress">第1题 / 共8题</div>
     <button class="speak-btn" id="speakBtn">🔊</button>
+    <!-- 新增：开关容器 -->
+    <div class="toggle-container">
+        <input type="checkbox" id="includeMeaning" checked>
+        <label for="includeMeaning">包括含义解释</label>
+    </div>
     <div class="options" id="options"></div>
     <div class="success-message" id="successMessage">
         🎉 挑战成功！ 🎉<br>
@@ -102,74 +117,74 @@
     <audio id="wrongSound" src="https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3"></audio>
 
     <script>
-        // 生字数据
+        // 生字数据（添加了meaning字段）
         const gameData = [
-            {char: '上下', pinyin: 'shàng xià'},
-            {char: '左右', pinyin: 'zuǒ yòu'},
-            {char: '前后', pinyin: 'qián hòu'},
-            {char: '多少', pinyin: 'duō shǎo'},
-            {char: '哪些', pinyin: 'nǎ xiē'},
-            {char: '按照', pinyin: 'àn zhào'},
-            {char: '方法', pinyin: 'fāng fǎ'},
-            {char: '相同', pinyin: 'xiāng tóng'},
-            {char: '不同', pinyin: 'bù tóng'},
-            {char: '高矮', pinyin: 'gāo ǎi'},
-            {char: '长短', pinyin: 'cháng duǎn'},
-            {char: '表示', pinyin: 'biǎo shì'},
-            {char: '圈一圈', pinyin: 'quān yī quān'},
-            {char: '画一画', pinyin: 'huà yī huà'},
-            {char: '数一数', pinyin: 'shǔ yī shǔ'},
-            {char: '连一连', pinyin: 'lián yī lián'},
-            {char: '涂一涂', pinyin: 'tú yī tú'},
-            {char: '比一比', pinyin: 'bǐ yī bǐ'},
-            {char: '球', pinyin: 'qiú'},
-            {char: '正方体', pinyin: 'zhèng fāng tǐ'},
-            {char: '长方体', pinyin: 'cháng fāng tǐ'},
-            {char: '正方形', pinyin: 'zhèng fāng xíng'},
-            {char: '长方形', pinyin: 'cháng fāng xíng'},
-            {char: '圆柱', pinyin: 'yuán zhù'},
-            {char: '原来', pinyin: 'yuán lái'},
-            {char: '现在', pinyin: 'xiàn zài'},
-            {char: '一共', pinyin: 'yī gòng'},
-            {char: '还有', pinyin: 'hái yǒu'},
-            {char: '剩下', pinyin: 'shèng xià'},
-            {char: '合起来', pinyin: 'hé qǐ lái'},
-            {char: '看图', pinyin: 'kàn tú'},
-            {char: '或者', pinyin: 'huò zhě'},
-            {char: '只有', pinyin: 'zhǐ yǒu'},
-            {char: '选择', pinyin: 'xuǎn zé'},
-            {char: '判断', pinyin: 'pàn duàn'},
-            {char: '去掉', pinyin: 'qù diào'},
-            {char: '读一读', pinyin: 'dú yī dú'},
-            {char: '写一写', pinyin: 'xiě yī xiě'},
-            {char: '填一填', pinyin: 'tián yī tián'},
-            {char: '算一算', pinyin: 'suàn yī suàn'},
-            {char: '比较', pinyin: 'bǐ jiào'},
-            {char: '相比', pinyin: 'xiāng bǐ'},
-            {char: '直尺', pinyin: 'zhí chǐ'},
-            {char: '练习', pinyin: 'liàn xí'},
-            {char: '第几', pinyin: 'dì jǐ'},
-            {char: '接着', pinyin: 'jiē zhe'},
-            {char: '靠近', pinyin: 'kào jìn'},
-            {char: '顺序', pinyin: 'shùn xù'},
-            {char: '数量', pinyin: 'shù liàng'},
-            {char: '读作', pinyin: 'dú zuò'},
-            {char: '图形', pinyin: 'tú xíng'},
-            {char: '结果', pinyin: 'jié guǒ'},
-            {char: '分类', pinyin: 'fēn lèi'},
-            {char: '确定', pinyin: 'què dìng'},
-            {char: '怎样', pinyin: 'zěn yàng'},
-            {char: '标准', pinyin: 'biāo zhǔn'},
-            {char: '黄色', pinyin: 'huáng sè'},
-            {char: '红色', pinyin: 'hóng sè'},
-            {char: '解答', pinyin: 'jiě dá'},
-            {char: '可能', pinyin: 'kě néng'},
-            {char: '对应', pinyin: 'duì yìng'},
-            {char: '排列', pinyin: 'pái liè'},
-            {char: '算式', pinyin: 'suàn shì'},
-            {char: '从小到大', pinyin: 'cóng xiǎo dào dà'},
-            {char: '从大到小', pinyin: 'cóng dà dào xiǎo'},
-            {char: '规律', pinyin: 'guī lǜ'}
+            {char: '上下', pinyin: 'shàng xià', meaning: '表示垂直方向的位置。'},
+            {char: '左右', pinyin: 'zuǒ yòu', meaning: '表示水平方向的位置。'},
+            {char: '前后', pinyin: 'qián hòu', meaning: '表示前后顺序的位置。'},
+            {char: '多少', pinyin: 'duō shǎo', meaning: '询问数量的多少。'},
+            {char: '哪些', pinyin: 'nǎ xiē', meaning: '询问具体的事物。'},
+            {char: '按照', pinyin: 'àn zhào', meaning: '根据某种规则或方式。'},
+            {char: '方法', pinyin: 'fāng fǎ', meaning: '解决问题的方式。'},
+            {char: '相同', pinyin: 'xiāng tóng', meaning: '一样，没有区别。'},
+            {char: '不同', pinyin: 'bù tóng', meaning: '不一样，有区别。'},
+            {char: '高矮', pinyin: 'gāo ǎi', meaning: '描述高度的对比。'},
+            {char: '长短', pinyin: 'cháng duǎn', meaning: '描述长度的对比。'},
+            {char: '表示', pinyin: 'biǎo shì', meaning: '表达某种意思。'},
+            {char: '圈一圈', pinyin: 'quān yī quān', meaning: '用圈标记出来。'},
+            {char: '画一画', pinyin: 'huà yī huà', meaning: '绘制一下。'},
+            {char: '数一数', pinyin: 'shǔ yī shǔ', meaning: '计算数量。'},
+            {char: '连一连', pinyin: 'lián yī lián', meaning: '用线连接起来。'},
+            {char: '涂一涂', pinyin: 'tú yī tú', meaning: '涂上颜色。'},
+            {char: '比一比', pinyin: 'bǐ yī bǐ', meaning: '进行比较。'},
+            {char: '球', pinyin: 'qiú', meaning: '圆形的物体。'},
+            {char: '正方体', pinyin: 'zhèng fāng tǐ', meaning: '六个面都是正方形的立体。'},
+            {char: '长方体', pinyin: 'cháng fāng tǐ', meaning: '六个面都是矩形的立体。'},
+            {char: '正方形', pinyin: 'zhèng fāng xíng', meaning: '四个边相等的平面图形。'},
+            {char: '长方形', pinyin: 'cháng fāng xíng', meaning: '对边相等的矩形平面图形。'},
+            {char: '圆柱', pinyin: 'yuán zhù', meaning: '圆形底面的柱状立体。'},
+            {char: '原来', pinyin: 'yuán lái', meaning: '表示最初的情况。'},
+            {char: '现在', pinyin: 'xiàn zài', meaning: '表示当前的时间。'},
+            {char: '一共', pinyin: 'yī gòng', meaning: '总计的数量。'},
+            {char: '还有', pinyin: 'hái yǒu', meaning: '表示剩余或额外。'},
+            {char: '剩下', pinyin: 'shèng xià', meaning: '剩余的部分。'},
+            {char: '合起来', pinyin: 'hé qǐ lái', meaning: '合并在一起。'},
+            {char: '看图', pinyin: 'kàn tú', meaning: '观察图片。'},
+            {char: '或者', pinyin: 'huò zhě', meaning: '表示选择之一。'},
+            {char: '只有', pinyin: 'zhǐ yǒu', meaning: '仅仅有。'},
+            {char: '选择', pinyin: 'xuǎn zé', meaning: '挑选某一个。'},
+            {char: '判断', pinyin: 'pàn duàn', meaning: '做出决定或评价。'},
+            {char: '去掉', pinyin: 'qù diào', meaning: '移除掉。'},
+            {char: '读一读', pinyin: 'dú yī dú', meaning: '朗读一下。'},
+            {char: '写一写', pinyin: 'xiě yī xiě', meaning: '书写一下。'},
+            {char: '填一填', pinyin: 'tián yī tián', meaning: '填写内容。'},
+            {char: '算一算', pinyin: 'suàn yī suàn', meaning: '计算一下。'},
+            {char: '比较', pinyin: 'bǐ jiào', meaning: '对比差异。'},
+            {char: '相比', pinyin: 'xiāng bǐ', meaning: '相互比较。'},
+            {char: '直尺', pinyin: 'zhí chǐ', meaning: '测量长度的工具。'},
+            {char: '练习', pinyin: 'liàn xí', meaning: '反复做以熟练。'},
+            {char: '第几', pinyin: 'dì jǐ', meaning: '询问顺序位置。'},
+            {char: '接着', pinyin: 'jiē zhe', meaning: '继续下去。'},
+            {char: '靠近', pinyin: 'kào jìn', meaning: '接近某物。'},
+            {char: '顺序', pinyin: 'shùn xù', meaning: '排列的次序。'},
+            {char: '数量', pinyin: 'shù liàng', meaning: '事物的多少。'},
+            {char: '读作', pinyin: 'dú zuò', meaning: '朗读的方式。'},
+            {char: '图形', pinyin: 'tú xíng', meaning: '形状的图案。'},
+            {char: '结果', pinyin: 'jié guǒ', meaning: '最终的结局。'},
+            {char: '分类', pinyin: 'fēn lèi', meaning: '分成类别。'},
+            {char: '确定', pinyin: 'què dìng', meaning: '确认无误。'},
+            {char: '怎样', pinyin: 'zěn yàng', meaning: '询问方式或情况。'},
+            {char: '标准', pinyin: 'biāo zhǔn', meaning: '衡量的准则。'},
+            {char: '黄色', pinyin: 'huáng sè', meaning: '一种颜色，如太阳。'},
+            {char: '红色', pinyin: 'hóng sè', meaning: '一种颜色，如苹果。'},
+            {char: '解答', pinyin: 'jiě dá', meaning: '解释答案。'},
+            {char: '可能', pinyin: 'kě néng', meaning: '有发生的几率。'},
+            {char: '对应', pinyin: 'duì yìng', meaning: '相互匹配。'},
+            {char: '排列', pinyin: 'pái liè', meaning: '按顺序摆放。'},
+            {char: '算式', pinyin: 'suàn shì', meaning: '数学表达式。'},
+            {char: '从小到大', pinyin: 'cóng xiǎo dào dà', meaning: '按从小到大的顺序。'},
+            {char: '从大到小', pinyin: 'cóng dà dào xiǎo', meaning: '按从大到小的顺序。'},
+            {char: '规律', pinyin: 'guī lǜ', meaning: '重复的模式。'}
         ];
 
         let currentQuestions = [];
@@ -182,10 +197,15 @@
             if (synth.speaking) synth.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'zh-CN';
-            utterance.rate = 0.7; // 调整为更慢的速度（原0.9，现0.7），以提高清晰度
-            utterance.pitch = 1.0; // 默认音高，可调整为稍高以提高清晰度
+            utterance.rate = 0.7; // 调整为更慢的速度，以提高清晰度
+            utterance.pitch = 1.0; // 默认音高
             utterance.volume = 1.0; // 最大音量
             synth.speak(utterance);
+        }
+
+        function getSpeakText(q) {
+            const includeMeaning = document.getElementById('includeMeaning').checked;
+            return includeMeaning ? `${q.char}。${q.meaning}` : `${q.char}。`;
         }
 
         function startGame() {
@@ -225,8 +245,8 @@
                 optionsContainer.appendChild(btn);
             });
 
-            // 自动朗读题目（改为朗读汉字）
-            speak(q.char);
+            // 自动朗读题目，根据开关决定是否包括含义
+            speak(getSpeakText(q));
         }
 
         function checkAnswer(selectedChar, btnElement) {
@@ -274,7 +294,8 @@
         // 初始化
         document.getElementById('speakBtn').onclick = function() {
             if (currentQuestions[currentQuestionIndex]) {
-                speak(currentQuestions[currentQuestionIndex].char); // 改为朗读汉字
+                const q = currentQuestions[currentQuestionIndex];
+                speak(getSpeakText(q)); // 根据开关决定朗读内容
             }
         };
 
