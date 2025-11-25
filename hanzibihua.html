@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 汉字笔顺学习工具</title>
+<script src="./hanzi-writer.min.js"></script>
+<style>
+
+        :root {
+
+            --primary-color: #4a90e2;
+
+            --bg-color: #f5f7fa;
+
+            --card-bg: #ffffff;
+
+        }
+
+        body {
+
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+
+            background-color: var(--bg-color);
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            min-height: 100vh;
+
+            margin: 0;
+
+            padding: 20px;
+
+        }
+
+        h1 {
+
+            color: #333;
+
+            margin-bottom: 20px;
+
+        }
+
+        /* 搜索区域 */
+
+        .search-box {
+
+            display: flex;
+
+            gap: 10px;
+
+            margin-bottom: 30px;
+
+            background: white;
+
+            padding: 10px;
+
+            border-radius: 50px;
+
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+
+        }
+
+        input {
+
+            border: none;
+
+            font-size: 18px;
+
+            padding: 10px 20px;
+
+            outline: none;
+
+            width: 120px;
+
+            text-align: center;
+
+        }
+
+        button.search-btn {
+
+            background-color: var(--primary-color);
+
+            color: white;
+
+            border: none;
+
+            padding: 10px 25px;
+
+            border-radius: 40px;
+
+            cursor: pointer;
+
+            font-size: 16px;
+
+            transition: background 0.2s;
+
+        }
+
+        button.search-btn:hover {
+
+            background-color: #357abd;
+
+        }
+
+        /* 主内容卡片 */
+
+        .container {
+
+            display: flex;
+
+            flex-wrap: wrap;
+
+            gap: 40px;
+
+            background: var(--card-bg);
+
+            padding: 40px;
+
+            border-radius: 20px;
+
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+
+            max-width: 800px;
+
+            width: 100%;
+
+            justify-content: center;
+
+        }
+
+        /* 左侧：写字区 */
+
+        .writer-section {
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+        }
+
+        #character-target-div {
+
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+
+            border-radius: 4px;
+
+            cursor: pointer; /* 提示用户可点击 */
+
+        }
+
+        .controls {
+
+            margin-top: 15px;
+
+            display: flex;
+
+            gap: 10px;
+
+        }
+
+        .btn-sm {
+
+            padding: 8px 16px;
+
+            border: 1px solid #ddd;
+
+            background: white;
+
+            border-radius: 6px;
+
+            cursor: pointer;
+
+            font-size: 14px;
+
+            transition: all 0.2s;
+
+        }
+
+        .btn-sm:hover {
+
+            background: #f0f0f0;
+
+            border-color: #bbb;
+
+        }
+
+        .btn-active {
+
+            background: #e6f7ff;
+
+            color: #1890ff;
+
+            border-color: #1890ff;
+
+        }
+
+        /* 右侧：AI 信息区 */
+
+        .info-section {
+
+            flex: 1;
+
+            min-width: 300px;
+
+        }
+
+        .header-group {
+
+            display: flex;
+
+            align-items: baseline;
+
+            gap: 15px;
+
+            margin-bottom: 20px;
+
+            border-bottom: 2px solid #f0f0f0;
+
+            padding-bottom: 10px;
+
+        }
+
+        .big-char {
+
+            font-size: 48px;
+
+            font-weight: bold;
+
+            color: #333;
+
+        }
+
+        .pinyin {
+
+            font-size: 24px;
+
+            color: var(--primary-color);
+
+            font-weight: 500;
+
+            cursor: pointer;
+
+        }
+
+        .audio-icon {
+
+            font-size: 18px;
+
+            cursor: pointer;
+
+        }
+
+        .section-title {
+
+            font-size: 14px;
+
+            color: #999;
+
+            margin-top: 20px;
+
+            margin-bottom: 8px;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+
+        }
+
+        .content-text {
+
+            font-size: 16px;
+
+            color: #444;
+
+            line-height: 1.6;
+
+        }
+
+        .tags {
+
+            display: flex;
+
+            gap: 10px;
+
+            flex-wrap: wrap;
+
+        }
+
+        .tag {
+
+            background: #f0f2f5;
+
+            padding: 5px 12px;
+
+            border-radius: 15px;
+
+            color: #555;
+
+            font-size: 14px;
+
+        }
+
+        .ai-note {
+
+            background: #fff7e6;
+
+            border-left: 4px solid #ffc107;
+
+            padding: 10px 15px;
+
+            margin-top: 20px;
+
+            font-size: 15px;
+
+            color: #666;
+
+            border-radius: 0 8px 8px 0;
+
+        }
+</style>
+</head>
+<body>
+<h1>✏️ AI 汉字私教</h1>
+<div class="search-box">
+<input type="text" id="inputChar" maxlength="1" value="学" placeholder="输入单字">
+<button class="search-btn" onclick="loadNewCharacter()">开始学习</button>
+</div>
+<div class="container">
+<div class="writer-section">
+<div id="character-target-div"></div>
+<div class="controls">
+<button class="btn-sm" onclick="animateChar()">🎥 演示笔顺</button>
+<button class="btn-sm" onclick="quizChar()">✍️ 描红测验</button>
+</div>
+</div>
+<div class="info-section">
+<div class="header-group">
+<div class="big-char" id="dispChar">学</div>
+<div class="pinyin" onclick="speak()" id="dispPinyin">xué 🔊</div>
+</div>
+<div class="section-title">AI 释义</div>
+<div class="content-text" id="dispDefinition">
+
+                效法，钻研知识，获得知识，读书。
+</div>
+<div class="section-title">常用组词</div>
+<div class="tags" id="dispCompounds">
+<span class="tag">学习</span>
+<span class="tag">学校</span>
+<span class="tag">自学</span>
+</div>
+<div class="section-title">AI 助记 / 造句</div>
+<div class="ai-note" id="dispNote">
+<strong style="display:block; margin-bottom:5px;">🤖 记忆小贴士：</strong>
+<span id="dispMnemonic">上面的""像两只手，中间是"爻"代表算筹或知识，下面是"子"代表孩子。孩子在用手摆弄算筹，这就是在"学"习。</span>
+</div>
+</div>
+</div>
+<script>
+
+        let writer = null;
+
+        // 1. 模拟后端 AI 返回的数据 (实际开发中应通过 fetch 调用 API)
+
+        const mockAIDb = {
+
+            "学": {
+
+                pinyin: "xué",
+
+                def: "效法，钻研知识，获得知识，读书。",
+
+                compounds: ["学习", "学校", "数学"],
+
+                mnemonic: "上面的''像两只手，中间是'爻'代表算筹，下面是'子'。孩子在动手操作，就是在学习。"
+
+            },
+
+            "习": {
+
+                pinyin: "xí",
+
+                def: "学过后再温熟，反复地学，使熟练。",
+
+                compounds: ["练习", "习惯", "复习"],
+
+                mnemonic: "甲骨文上面是'羽'（翅膀），下面是'日'。小鸟在太阳下反复试飞，就是'习'。"
+
+            },
+
+            "我": {
+
+                pinyin: "wǒ",
+
+                def: "自称，自己，亦指自己一方。",
+
+                compounds: ["我们", "自我", "忘我"],
+
+                mnemonic: "左边是'手'的变形，右边是'戈'（兵器）。手持兵器保卫自己，就是'我'。"
+
+            },
+
+            "爱": {
+
+                pinyin: "ài",
+
+                def: "对人或事有深挚的感情。",
+
+                compounds: ["爱心", "友爱", "亲爱"],
+
+                mnemonic: "繁体字中间有个'心'。用心去呵护，上面有爪（手）在遮挡风雨，这就是爱。"
+
+            }
+
+        };
+
+        // 2. 初始化 Hanzi Writer
+
+        function initWriter(char) {
+
+            // 如果已经有实例，先销毁（避免DOM重复）
+
+            document.getElementById('character-target-div').innerHTML = '';
+
+            writer = HanziWriter.create('character-target-div', char, {
+
+                width: 260,
+
+                height: 260,
+
+                padding: 5,
+
+                showOutline: true,
+
+                strokeAnimationSpeed: 1.5, // 笔画速度
+
+                delayBetweenStrokes: 100, // 笔画停顿
+
+                radicalColor: '#4a90e2', // 部首颜色
+
+                drawingWidth: 20, // 笔画粗细
+
+                showCharacter: true,
+
+                backgroundType: 'svg', // 确保清晰度
+
+                // 绘制田字格背景
+
+                onLoadCharDataSuccess: function(data) {
+
+                   // 这里可以加加载成功的逻辑
+
+                },
+
+                onLoadCharDataError: function(error) {
+
+                    alert("抱歉，字库中暂时没有这个字的笔顺数据。");
+
+                }
+
+            });
+
+            // 稍微延迟一下自动演示
+
+            setTimeout(() => {
+
+                writer.animateCharacter();
+
+            }, 500);
+
+        }
+
+        // 3. 加载新字的主逻辑
+
+        function loadNewCharacter() {
+
+            const char = document.getElementById('inputChar').value.trim();
+
+            if (!char || char.length > 1) {
+
+                alert("请输入单个汉字");
+
+                return;
+
+            }
+
+            // 检查是否是汉字
+
+            if (!/[\u4e00-\u9fa5]/.test(char)) {
+
+                alert("请输入中文字符");
+
+                return;
+
+            }
+
+            // A. 更新 UI 内容
+
+            updateUI(char);
+
+            // B. 初始化笔顺动画
+
+            initWriter(char);
+
+        }
+
+        // 4. 更新界面文字 (模拟 AI 生成)
+
+        function updateUI(char) {
+
+            document.getElementById('dispChar').innerText = char;
+
+            // 查找模拟数据，如果没有则显示通用模板
+
+            const data = mockAIDb[char] || {
+
+                pinyin: "...", 
+
+                def: "AI正在解析该字的含义...", 
+
+                compounds: ["组词1", "组词2", "组词3"], 
+
+                mnemonic: "这是一个生僻字或未在演示库中，但笔顺动画仍可运行。"
+
+            };
+
+            document.getElementById('dispPinyin').innerText = data.pinyin + " 🔊";
+
+            document.getElementById('dispDefinition').innerText = data.def;
+
+            document.getElementById('dispMnemonic').innerText = data.mnemonic;
+
+            // 更新组词标签
+
+            const compoundsContainer = document.getElementById('dispCompounds');
+
+            compoundsContainer.innerHTML = ''; // 清空
+
+            data.compounds.forEach(word => {
+
+                const span = document.createElement('span');
+
+                span.className = 'tag';
+
+                span.innerText = word;
+
+                compoundsContainer.appendChild(span);
+
+            });
+
+        }
+
+        // 5. 控制功能
+
+        function animateChar() {
+
+            if(writer) writer.animateCharacter();
+
+        }
+
+        function quizChar() {
+
+            if(writer) {
+
+                writer.quiz({
+
+                    onMistake: function(strokeData) {
+
+                        console.log('笔顺错误！');
+
+                    },
+
+                    onCorrectStroke: function(strokeData) {
+
+                        console.log('正确！');
+
+                    },
+
+                    onComplete: function(summaryData) {
+
+                        alert('恭喜！你已经学会写这个字了！');
+
+                    }
+
+                });
+
+            }
+
+        }
+
+        function speak() {
+
+            const text = document.getElementById('inputChar').value;
+
+            if ('speechSynthesis' in window) {
+
+                const utterance = new SpeechSynthesisUtterance(text);
+
+                utterance.lang = 'zh-CN';
+
+                window.speechSynthesis.speak(utterance);
+
+            } else {
+
+                alert("您的浏览器不支持语音合成");
+
+            }
+
+        }
+
+        // 页面加载时初始化默认字
+
+        window.onload = function() {
+
+            loadNewCharacter();
+
+        }
+</script>
+</body>
+</html>
+ 

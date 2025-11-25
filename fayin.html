@@ -85,7 +85,6 @@
             cursor: pointer;
             margin-top: 20px;
         }
-        /* 新增样式：开关 */
         .toggle-container {
             margin: 10px auto;
             font-size: 18px;
@@ -101,7 +100,6 @@
     <h1>🎧 纯听音选汉字</h1>
     <div class="progress" id="progress">第1题 / 共8题</div>
     <button class="speak-btn" id="speakBtn">🔊</button>
-    <!-- 新增：开关容器 -->
     <div class="toggle-container">
         <input type="checkbox" id="includeMeaning" checked>
         <label for="includeMeaning">包括含义解释</label>
@@ -115,9 +113,10 @@
 
     <audio id="correctSound" src="https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3"></audio>
     <audio id="wrongSound" src="https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3"></audio>
+    <script src="https://code.responsivevoice.org/responsivevoice.js"></script>
 
+ 
     <script>
-        // 生字数据（添加了meaning字段）
         const gameData = [
             {char: '上下', pinyin: 'shàng xià', meaning: '表示垂直方向的位置。'},
             {char: '左右', pinyin: 'zuǒ yòu', meaning: '表示水平方向的位置。'},
@@ -190,17 +189,14 @@
         let currentQuestions = [];
         let currentQuestionIndex = 0;
         let correctAnswer = '';
-        let errorCount = 0; // 新增：记录错误次数
-        let synth = window.speechSynthesis;
-
+        let errorCount = 0;
+        
         function speak(text) {
-            if (synth.speaking) synth.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'zh-CN';
-            utterance.rate = 0.7; // 调整为更慢的速度，以提高清晰度
-            utterance.pitch = 1.0; // 默认音高
-            utterance.volume = 1.0; // 最大音量
-            synth.speak(utterance);
+            responsiveVoice.speak(text, "Chinese Female", {
+                rate: 0.9,
+                pitch: 1,
+                volume: 1
+            });
         }
 
         function getSpeakText(q) {
@@ -209,9 +205,33 @@
         }
 
         function startGame() {
-            currentQuestions = shuffleArray([...gameData]).slice(0, 8);
+            const TOTAL_QUESTIONS = 8;
+            const priorityChars = ['对应', '算式', '红色'];
+            
+            // 1. Separate priority questions and other questions
+            const priorityQuestions = gameData.filter(item => priorityChars.includes(item.char));
+            const otherQuestions = gameData.filter(item => !priorityChars.includes(item.char));
+            
+            let selectedQuestions = [];
+            
+            // 2. Add priority questions with a 90% chance
+            priorityQuestions.forEach(q => {
+                if (Math.random() < 0.9) { // 90% probability
+                    selectedQuestions.push(q);
+                }
+            });
+            
+            // 3. Fill the remaining slots with other random questions
+            const remainingSlots = TOTAL_QUESTIONS - selectedQuestions.length;
+            if (remainingSlots > 0) {
+                const shuffledOthers = shuffleArray(otherQuestions);
+                selectedQuestions.push(...shuffledOthers.slice(0, remainingSlots));
+            }
+            
+            // 4. Final shuffle and start the game
+            currentQuestions = shuffleArray(selectedQuestions);
             currentQuestionIndex = 0;
-            errorCount = 0; // 重置错误计数
+            errorCount = 0;
             showQuestion();
         }
 
@@ -228,7 +248,6 @@
             document.getElementById('progress').textContent = 
                 `第${currentQuestionIndex + 1}题 / 共${currentQuestions.length}题`;
             
-            // 生成选项：1个正确答案 + 3个干扰项
             const options = [q.char];
             const otherChars = gameData.filter(item => item.char !== q.char).map(item => item.char);
             const shuffledOthers = shuffleArray(otherChars);
@@ -245,13 +264,12 @@
                 optionsContainer.appendChild(btn);
             });
 
-            // 自动朗读题目，根据开关决定是否包括含义
             speak(getSpeakText(q));
         }
 
         function checkAnswer(selectedChar, btnElement) {
             const options = document.querySelectorAll('.option');
-            options.forEach(opt => opt.onclick = null); // 禁用所有选项
+            options.forEach(opt => opt.onclick = null);
             
             if (selectedChar === correctAnswer) {
                 btnElement.classList.add('correct');
@@ -263,8 +281,7 @@
             } else {
                 btnElement.classList.add('wrong');
                 document.getElementById('wrongSound').play();
-                errorCount++; // 记录错误
-                // 高亮显示正确答案
+                errorCount++;
                 options.forEach(opt => {
                     if (opt.textContent === correctAnswer) {
                         opt.classList.add('correct');
@@ -291,11 +308,10 @@
             startGame();
         }
 
-        // 初始化
         document.getElementById('speakBtn').onclick = function() {
             if (currentQuestions[currentQuestionIndex]) {
                 const q = currentQuestions[currentQuestionIndex];
-                speak(getSpeakText(q)); // 根据开关决定朗读内容
+                speak(getSpeakText(q));
             }
         };
 
