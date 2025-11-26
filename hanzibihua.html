@@ -3,334 +3,76 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI 汉字笔顺学习工具</title>
-<script src="./hanzi-writer.min.js"></script>
+<title>AI 汉字私教 (Gemini版)</title>
+<script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
 <style>
 
-        :root {
+        :root { --primary-color: #4a90e2; --bg-color: #f5f7fa; --card-bg: #ffffff; }
 
-            --primary-color: #4a90e2;
+        body { font-family: 'Segoe UI', 'PingFang SC', sans-serif; background-color: var(--bg-color); display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
 
-            --bg-color: #f5f7fa;
+        h1 { color: #333; margin-bottom: 20px; }
 
-            --card-bg: #ffffff;
+        /* 搜索框样式 */
 
-        }
+        .search-box { display: flex; gap: 10px; margin-bottom: 30px; background: white; padding: 10px; border-radius: 50px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
 
-        body {
+        input { border: none; font-size: 18px; padding: 10px 20px; outline: none; width: 120px; text-align: center; }
 
-            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        button.search-btn { background-color: var(--primary-color); color: white; border: none; padding: 10px 25px; border-radius: 40px; cursor: pointer; font-size: 16px; transition: 0.2s; }
 
-            background-color: var(--bg-color);
+        button.search-btn:hover { background-color: #357abd; }
 
-            display: flex;
+        button.search-btn:disabled { background-color: #ccc; cursor: not-allowed; }
 
-            flex-direction: column;
+        /* 布局 */
 
-            align-items: center;
+        .container { display: flex; flex-wrap: wrap; gap: 40px; background: var(--card-bg); padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 800px; width: 100%; justify-content: center; }
 
-            min-height: 100vh;
+        /* 写字区 */
 
-            margin: 0;
+        .writer-section { display: flex; flex-direction: column; align-items: center; }
 
-            padding: 20px;
+        #character-target-div { box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 4px; background: #fff; }
 
-        }
+        .controls { margin-top: 15px; display: flex; gap: 10px; }
 
-        h1 {
+        .btn-sm { padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
 
-            color: #333;
+        .btn-sm:hover { background: #f0f0f0; }
 
-            margin-bottom: 20px;
+        /* 信息区 */
 
-        }
+        .info-section { flex: 1; min-width: 300px; }
 
-        /* 搜索区域 */
+        .header-group { display: flex; align-items: baseline; gap: 15px; margin-bottom: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
 
-        .search-box {
+        .big-char { font-size: 48px; font-weight: bold; color: #333; }
 
-            display: flex;
+        .pinyin { font-size: 24px; color: var(--primary-color); font-weight: 500; cursor: pointer; }
 
-            gap: 10px;
+        .section-title { font-size: 14px; color: #999; margin-top: 20px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
 
-            margin-bottom: 30px;
+        .content-text { font-size: 16px; color: #444; line-height: 1.6; min-height: 40px; }
 
-            background: white;
+        .tags { display: flex; gap: 10px; flex-wrap: wrap; }
 
-            padding: 10px;
+        .tag { background: #f0f2f5; padding: 5px 12px; border-radius: 15px; color: #555; font-size: 14px; }
 
-            border-radius: 50px;
+        .ai-note { background: #fff7e6; border-left: 4px solid #ffc107; padding: 10px 15px; margin-top: 20px; font-size: 15px; color: #666; border-radius: 0 8px 8px 0; }
 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        /* 加载动画 */
 
-        }
+        .loading-dots:after { content: ' .'; animation: dots 1s steps(5, end) infinite;}
 
-        input {
-
-            border: none;
-
-            font-size: 18px;
-
-            padding: 10px 20px;
-
-            outline: none;
-
-            width: 120px;
-
-            text-align: center;
-
-        }
-
-        button.search-btn {
-
-            background-color: var(--primary-color);
-
-            color: white;
-
-            border: none;
-
-            padding: 10px 25px;
-
-            border-radius: 40px;
-
-            cursor: pointer;
-
-            font-size: 16px;
-
-            transition: background 0.2s;
-
-        }
-
-        button.search-btn:hover {
-
-            background-color: #357abd;
-
-        }
-
-        /* 主内容卡片 */
-
-        .container {
-
-            display: flex;
-
-            flex-wrap: wrap;
-
-            gap: 40px;
-
-            background: var(--card-bg);
-
-            padding: 40px;
-
-            border-radius: 20px;
-
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-
-            max-width: 800px;
-
-            width: 100%;
-
-            justify-content: center;
-
-        }
-
-        /* 左侧：写字区 */
-
-        .writer-section {
-
-            display: flex;
-
-            flex-direction: column;
-
-            align-items: center;
-
-        }
-
-        #character-target-div {
-
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-
-            border-radius: 4px;
-
-            cursor: pointer; /* 提示用户可点击 */
-
-        }
-
-        .controls {
-
-            margin-top: 15px;
-
-            display: flex;
-
-            gap: 10px;
-
-        }
-
-        .btn-sm {
-
-            padding: 8px 16px;
-
-            border: 1px solid #ddd;
-
-            background: white;
-
-            border-radius: 6px;
-
-            cursor: pointer;
-
-            font-size: 14px;
-
-            transition: all 0.2s;
-
-        }
-
-        .btn-sm:hover {
-
-            background: #f0f0f0;
-
-            border-color: #bbb;
-
-        }
-
-        .btn-active {
-
-            background: #e6f7ff;
-
-            color: #1890ff;
-
-            border-color: #1890ff;
-
-        }
-
-        /* 右侧：AI 信息区 */
-
-        .info-section {
-
-            flex: 1;
-
-            min-width: 300px;
-
-        }
-
-        .header-group {
-
-            display: flex;
-
-            align-items: baseline;
-
-            gap: 15px;
-
-            margin-bottom: 20px;
-
-            border-bottom: 2px solid #f0f0f0;
-
-            padding-bottom: 10px;
-
-        }
-
-        .big-char {
-
-            font-size: 48px;
-
-            font-weight: bold;
-
-            color: #333;
-
-        }
-
-        .pinyin {
-
-            font-size: 24px;
-
-            color: var(--primary-color);
-
-            font-weight: 500;
-
-            cursor: pointer;
-
-        }
-
-        .audio-icon {
-
-            font-size: 18px;
-
-            cursor: pointer;
-
-        }
-
-        .section-title {
-
-            font-size: 14px;
-
-            color: #999;
-
-            margin-top: 20px;
-
-            margin-bottom: 8px;
-
-            text-transform: uppercase;
-
-            letter-spacing: 1px;
-
-        }
-
-        .content-text {
-
-            font-size: 16px;
-
-            color: #444;
-
-            line-height: 1.6;
-
-        }
-
-        .tags {
-
-            display: flex;
-
-            gap: 10px;
-
-            flex-wrap: wrap;
-
-        }
-
-        .tag {
-
-            background: #f0f2f5;
-
-            padding: 5px 12px;
-
-            border-radius: 15px;
-
-            color: #555;
-
-            font-size: 14px;
-
-        }
-
-        .ai-note {
-
-            background: #fff7e6;
-
-            border-left: 4px solid #ffc107;
-
-            padding: 10px 15px;
-
-            margin-top: 20px;
-
-            font-size: 15px;
-
-            color: #666;
-
-            border-radius: 0 8px 8px 0;
-
-        }
+        @keyframes dots { 0%, 20% { color: rgba(0,0,0,0); text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0);} 40% { color: #333; text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0);} 60% { text-shadow: .25em 0 0 #333, .5em 0 0 rgba(0,0,0,0);} 80%, 100% { text-shadow: .25em 0 0 #333, .5em 0 0 #333;}}
 </style>
 </head>
 <body>
-<h1>✏️ AI 汉字私教</h1>
+<h1>✏️ AI 汉字私教 (Gemini API)</h1>
 <div class="search-box">
-<input type="text" id="inputChar" maxlength="1" value="学" placeholder="输入单字">
-<button class="search-btn" onclick="loadNewCharacter()">开始学习</button>
+<input type="text" id="inputChar" maxlength="1" value="智" placeholder="输入单字">
+<button class="search-btn" id="btnStart" onclick="loadNewCharacter()">开始学习</button>
 </div>
 <div class="container">
 <div class="writer-section">
@@ -342,90 +84,238 @@
 </div>
 <div class="info-section">
 <div class="header-group">
-<div class="big-char" id="dispChar">学</div>
-<div class="pinyin" onclick="speak()" id="dispPinyin">xué 🔊</div>
+<div class="big-char" id="dispChar">...</div>
+<div class="pinyin" onclick="speak()" id="dispPinyin">...</div>
 </div>
 <div class="section-title">AI 释义</div>
-<div class="content-text" id="dispDefinition">
-
-                效法，钻研知识，获得知识，读书。
-</div>
+<div class="content-text" id="dispDefinition">请在上方输入汉字...</div>
 <div class="section-title">常用组词</div>
-<div class="tags" id="dispCompounds">
-<span class="tag">学习</span>
-<span class="tag">学校</span>
-<span class="tag">自学</span>
-</div>
-<div class="section-title">AI 助记 / 造句</div>
+<div class="tags" id="dispCompounds"></div>
+<div class="section-title">AI 助记 / 字源</div>
 <div class="ai-note" id="dispNote">
 <strong style="display:block; margin-bottom:5px;">🤖 记忆小贴士：</strong>
-<span id="dispMnemonic">上面的""像两只手，中间是"爻"代表算筹或知识，下面是"子"代表孩子。孩子在用手摆弄算筹，这就是在"学"习。</span>
+<span id="dispMnemonic">...</span>
 </div>
 </div>
 </div>
 <script>
 
+        // ==========================================
+
+        // 🔑 配置区域
+
+        // ==========================================
+
+        // ⚠️ 请在这里填入你申请的 Google Gemini API Key
+
+        const API_KEY = 'AIzaSyBR00b8RjyYBWedF-n0eAQHM-eQ1nFHW68'; 
+
+        // ==========================================
+
         let writer = null;
 
-        // 1. 模拟后端 AI 返回的数据 (实际开发中应通过 fetch 调用 API)
+        // 1. 调用 Google Gemini API
 
-        const mockAIDb = {
+        async function fetchAIInfo_(char) {
 
-            "学": {
+            if (!API_KEY || API_KEY.includes('在此处粘贴')) {
 
-                pinyin: "xué",
+                alert("请先在代码中填入你的 Gemini API Key！");
 
-                def: "效法，钻研知识，获得知识，读书。",
-
-                compounds: ["学习", "学校", "数学"],
-
-                mnemonic: "上面的''像两只手，中间是'爻'代表算筹，下面是'子'。孩子在动手操作，就是在学习。"
-
-            },
-
-            "习": {
-
-                pinyin: "xí",
-
-                def: "学过后再温熟，反复地学，使熟练。",
-
-                compounds: ["练习", "习惯", "复习"],
-
-                mnemonic: "甲骨文上面是'羽'（翅膀），下面是'日'。小鸟在太阳下反复试飞，就是'习'。"
-
-            },
-
-            "我": {
-
-                pinyin: "wǒ",
-
-                def: "自称，自己，亦指自己一方。",
-
-                compounds: ["我们", "自我", "忘我"],
-
-                mnemonic: "左边是'手'的变形，右边是'戈'（兵器）。手持兵器保卫自己，就是'我'。"
-
-            },
-
-            "爱": {
-
-                pinyin: "ài",
-
-                def: "对人或事有深挚的感情。",
-
-                compounds: ["爱心", "友爱", "亲爱"],
-
-                mnemonic: "繁体字中间有个'心'。用心去呵护，上面有爪（手）在遮挡风雨，这就是爱。"
+                return null;
 
             }
 
-        };
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
-        // 2. 初始化 Hanzi Writer
+            // 精心设计的 Prompt，强制 AI 返回 JSON 格式
+
+            const prompt = `
+
+            你是一个中文教学助手。请分析汉字“${char}”。
+
+            请严格只返回一个 JSON 对象，不要包含 markdown 格式（如 \`\`\`json），不要包含其他多余文字。
+
+            JSON 格式要求如下：
+
+            {
+
+                "pinyin": "带声调的拼音 (例如：míng)",
+
+                "definition": "这个字的含义解释，简单易懂，适合学生",
+
+                "compounds": ["组词1", "组词2", "组词3"],
+
+                "mnemonic": "一段关于这个字的助记技巧、拆字法或字源小故事，有趣一点"
+
+            }
+
+            `;
+
+            const data = {
+
+                contents: [{
+
+                    parts: [{ text: prompt }]
+
+                }]
+
+            };
+
+            try {
+
+                const response = await fetch(url, {
+
+                    method: 'POST',
+
+                    headers: { 'Content-Type': 'application/json' },
+
+                    body: JSON.stringify(data)
+
+                });
+
+                const result = await response.json();
+
+                // 解析 Gemini 的返回结构
+
+                let rawText = result.candidates[0].content.parts[0].text;
+
+                // 清理可能存在的 Markdown 标记
+
+                rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+
+                return JSON.parse(rawText);
+
+            } catch (error) {
+
+                console.error("AI API Error:", error);
+
+                alert("AI 生成失败，请检查网络或 API Key。");
+
+                return {
+
+                    pinyin: "Error",
+
+                    definition: "无法连接到 AI 获取释义。",
+
+                    compounds: [],
+
+                    mnemonic: "网络错误"
+
+                };
+
+            }
+
+        }
+        async function fetchAIInfo(char) {
+            const url = `https://api.xdict.cn/zi/${encodeURIComponent(char)}`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('API Error');
+
+                const data = await response.json();
+                console.info(data)
+                // 提取并格式化数据（萌典返回结构需映射到你的JSON格式）
+                const heteronyms = data.heteronyms[0] || {};
+                const definitions = heteronyms.definitions || [];
+                const definition = definitions[0]?.def || '未找到释义';
+                const pinyin = heteronyms.bopomofo || '未知';  // 可转换为汉语拼音
+
+                return {
+                    pinyin: pinyin.replace(/ˊ|ˇ|ˋ|˙/g, ''),  // 简化声调
+                    definition: definition,
+                    compounds: heteronyms.examples?.slice(0, 3) || ['示例1', '示例2', '示例3'],  // 提取示例词
+                    mnemonic: `有趣小贴士：${char} 的字源可能源自古代象形，想象它像...`  // 可自定义助记
+                };
+            } catch (error) {
+                console.error("API Error:", error);
+                return {
+                    pinyin: "Error",
+                    definition: "无法获取释义。",
+                    compounds: [],
+                    mnemonic: "网络错误"
+                };
+            }
+        }
+
+// 使用示例
+fetchCharInfo('明').then(info => console.log(info));
+        // 2. 界面加载逻辑
+
+        async function loadNewCharacter() {
+
+            const char = document.getElementById('inputChar').value.trim();
+
+            if (!char || char.length > 1 || !/[\u4e00-\u9fa5]/.test(char)) {
+
+                alert("请输入单个中文字符");
+
+                return;
+
+            }
+
+            // 锁定按钮，显示加载状态
+
+            const btn = document.getElementById('btnStart');
+
+            btn.disabled = true;
+
+            btn.innerText = "AI 思考中...";
+
+            document.getElementById('dispChar').innerText = char;
+
+            document.getElementById('dispPinyin').innerText = "加载中...";
+
+            document.getElementById('dispDefinition').innerHTML = '<span class="loading-dots">AI 正在查询解释</span>';
+
+            document.getElementById('dispMnemonic').innerText = "...";
+
+            document.getElementById('dispCompounds').innerHTML = "";
+
+            // A. 并行执行：初始化笔顺 (本地/CDN)
+
+            initWriter(char);
+
+            // B. 并行执行：请求 AI (网络请求)
+
+            const aiData = await fetchAIInfo(char);
+
+            if (aiData) {
+
+                document.getElementById('dispPinyin').innerText = aiData.pinyin + " 🔊";
+
+                document.getElementById('dispDefinition').innerText = aiData.definition;
+
+                document.getElementById('dispMnemonic').innerText = aiData.mnemonic;
+
+                const compoundsContainer = document.getElementById('dispCompounds');
+
+                aiData.compounds.forEach(word => {
+
+                    const span = document.createElement('span');
+
+                    span.className = 'tag';
+
+                    span.innerText = word;
+
+                    compoundsContainer.appendChild(span);
+
+                });
+
+            }
+
+            // 恢复按钮
+
+            btn.disabled = false;
+
+            btn.innerText = "开始学习";
+
+        }
+
+        // 3. Hanzi Writer 初始化
 
         function initWriter(char) {
-
-            // 如果已经有实例，先销毁（避免DOM重复）
 
             document.getElementById('character-target-div').innerHTML = '';
 
@@ -439,131 +329,21 @@
 
                 showOutline: true,
 
-                strokeAnimationSpeed: 1.5, // 笔画速度
+                strokeAnimationSpeed: 1.5,
 
-                delayBetweenStrokes: 100, // 笔画停顿
+                delayBetweenStrokes: 200,
 
-                radicalColor: '#4a90e2', // 部首颜色
-
-                drawingWidth: 20, // 笔画粗细
-
-                showCharacter: true,
-
-                backgroundType: 'svg', // 确保清晰度
-
-                // 绘制田字格背景
-
-                onLoadCharDataSuccess: function(data) {
-
-                   // 这里可以加加载成功的逻辑
-
-                },
-
-                onLoadCharDataError: function(error) {
-
-                    alert("抱歉，字库中暂时没有这个字的笔顺数据。");
-
-                }
+                radicalColor: '#4a90e2',
 
             });
 
-            // 稍微延迟一下自动演示
-
-            setTimeout(() => {
-
-                writer.animateCharacter();
-
-            }, 500);
+            setTimeout(() => { writer.animateCharacter(); }, 500);
 
         }
 
-        // 3. 加载新字的主逻辑
+        // 4. 辅助功能
 
-        function loadNewCharacter() {
-
-            const char = document.getElementById('inputChar').value.trim();
-
-            if (!char || char.length > 1) {
-
-                alert("请输入单个汉字");
-
-                return;
-
-            }
-
-            // 检查是否是汉字
-
-            if (!/[\u4e00-\u9fa5]/.test(char)) {
-
-                alert("请输入中文字符");
-
-                return;
-
-            }
-
-            // A. 更新 UI 内容
-
-            updateUI(char);
-
-            // B. 初始化笔顺动画
-
-            initWriter(char);
-
-        }
-
-        // 4. 更新界面文字 (模拟 AI 生成)
-
-        function updateUI(char) {
-
-            document.getElementById('dispChar').innerText = char;
-
-            // 查找模拟数据，如果没有则显示通用模板
-
-            const data = mockAIDb[char] || {
-
-                pinyin: "...", 
-
-                def: "AI正在解析该字的含义...", 
-
-                compounds: ["组词1", "组词2", "组词3"], 
-
-                mnemonic: "这是一个生僻字或未在演示库中，但笔顺动画仍可运行。"
-
-            };
-
-            document.getElementById('dispPinyin').innerText = data.pinyin + " 🔊";
-
-            document.getElementById('dispDefinition').innerText = data.def;
-
-            document.getElementById('dispMnemonic').innerText = data.mnemonic;
-
-            // 更新组词标签
-
-            const compoundsContainer = document.getElementById('dispCompounds');
-
-            compoundsContainer.innerHTML = ''; // 清空
-
-            data.compounds.forEach(word => {
-
-                const span = document.createElement('span');
-
-                span.className = 'tag';
-
-                span.innerText = word;
-
-                compoundsContainer.appendChild(span);
-
-            });
-
-        }
-
-        // 5. 控制功能
-
-        function animateChar() {
-
-            if(writer) writer.animateCharacter();
-
-        }
+        function animateChar() { if(writer) writer.animateCharacter(); }
 
         function quizChar() {
 
@@ -571,23 +351,7 @@
 
                 writer.quiz({
 
-                    onMistake: function(strokeData) {
-
-                        console.log('笔顺错误！');
-
-                    },
-
-                    onCorrectStroke: function(strokeData) {
-
-                        console.log('正确！');
-
-                    },
-
-                    onComplete: function(summaryData) {
-
-                        alert('恭喜！你已经学会写这个字了！');
-
-                    }
+                    onComplete: function() { alert('太棒了！书写正确！'); }
 
                 });
 
@@ -599,27 +363,29 @@
 
             const text = document.getElementById('inputChar').value;
 
-            if ('speechSynthesis' in window) {
+            const u = new SpeechSynthesisUtterance(text);
 
-                const utterance = new SpeechSynthesisUtterance(text);
+            u.lang = 'zh-CN';
 
-                utterance.lang = 'zh-CN';
-
-                window.speechSynthesis.speak(utterance);
-
-            } else {
-
-                alert("您的浏览器不支持语音合成");
-
-            }
+            window.speechSynthesis.speak(u);
 
         }
 
-        // 页面加载时初始化默认字
+        // 初始加载
 
         window.onload = function() {
 
-            loadNewCharacter();
+            // 提示用户填 Key
+
+            if(API_KEY.includes('_GOOGLE_API_KEY')) {
+
+                alert("欢迎！请记得用代码编辑器打开此文件，并在第109行填入你的 Google API Key 才能使用 AI 功能。");
+
+            } else {
+
+                loadNewCharacter();
+
+            }
 
         }
 </script>

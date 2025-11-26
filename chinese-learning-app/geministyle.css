@@ -1,0 +1,308 @@
+:root {
+    --primary-color: #e63946;
+    --primary-hover: #d62839;
+    --bg-color: #f8f9fa;
+    --card-bg: #ffffff;
+    --text-main: #2b2d42;
+    --text-secondary: #8d99ae;
+    --accent-color: #457b9d;
+    --border-radius: 16px;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    --font-main: 'Outfit', sans-serif;
+    --font-chinese: 'Noto Serif SC', serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-main);
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.app-container {
+    width: 100%;
+    max-width: 1000px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+}
+
+header p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+/* Input Section */
+.input-section {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.search-box {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    align-items: center;
+    background: var(--card-bg);
+    border-radius: 50px;
+    box-shadow: var(--shadow);
+    padding: 0.5rem;
+    transition: transform 0.2s ease;
+}
+
+.search-box:focus-within {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.search-box input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 0.8rem 1.5rem;
+    font-size: 1.2rem;
+    font-family: var(--font-chinese);
+    outline: none;
+    color: var(--text-main);
+}
+
+.search-box button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.search-box button:hover {
+    background: var(--primary-hover);
+}
+
+/* Content Grid */
+.content-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+@media (max-width: 768px) {
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Character Display (Tianzige) */
+.character-display {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.tianzige-container {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    background: #fff;
+    border: 2px solid #e63946;
+}
+
+#character-target-div {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    z-index: 2;
+}
+
+.tianzige-grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.line {
+    position: absolute;
+    background-color: #e63946;
+    opacity: 0.3;
+}
+
+.line.horizontal {
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    border-top: 1px dashed #e63946;
+    background: none;
+}
+
+.line.vertical {
+    left: 50%;
+    top: 0;
+    height: 100%;
+    width: 1px;
+    border-left: 1px dashed #e63946;
+    background: none;
+}
+
+.line.diagonal-1 {
+    top: 0;
+    left: 0;
+    width: 141.4%;
+    height: 1px;
+    transform-origin: top left;
+    transform: rotate(45deg);
+    border-top: 1px dashed #e63946;
+    background: none;
+    display: none; /* Optional: Tianzige usually just has + but sometimes X */
+}
+
+.controls {
+    display: flex;
+    gap: 1rem;
+}
+
+.control-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#animateBtn {
+    background: var(--primary-color);
+    color: white;
+}
+
+#animateBtn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+}
+
+.control-btn.secondary {
+    background: #edf2f4;
+    color: var(--text-main);
+}
+
+.control-btn.secondary:hover {
+    background: #e0e6e8;
+}
+
+/* Info Panel */
+.info-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.info-card {
+    background: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+}
+
+.info-card h3 {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.pinyin-display {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+#pinyinText {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    font-family: var(--font-main);
+}
+
+.audio-btn {
+    background: #edf2f4;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-main);
+    transition: all 0.2s;
+}
+
+.audio-btn:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.meaning-content p {
+    line-height: 1.6;
+    margin-bottom: 0.5rem;
+}
+
+.meaning-content .placeholder {
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.word-item {
+    display: inline-block;
+    background: #edf2f4;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-main);
+}

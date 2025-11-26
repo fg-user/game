@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chinese Character Learning</title>
+    <link rel="stylesheet" href="geministyle.css">
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Outfit:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <!-- Hanzi Writer -->
+    <script src="geminihanzi-writer.min.js"></script>
+    <!-- cnchar -->
+    <script src="cnchar.min.js"></script>
+    <script src="cnchar.order.min.js"></script>
+    <script src="cnchar.trad.min.js"></script>
+    <script src="cnchar.poly.min.js"></script>
+    <script src="cnchar.idiom.min.js"></script>
+    <script src="ai_definitions.js"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <header>
+            <h1>AI 汉字学习</h1>
+            <p>Explore the beauty of Chinese characters</p>
+        </header>
+
+        <main>
+            <div class="input-section">
+                <div class="search-box">
+                    <input type="text" id="charInput" placeholder="输入汉字(e.g., 永)" maxlength="1">
+                    <button id="searchBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="content-grid">
+                <div class="character-display">
+                    <div class="tianzige-container">
+                        <div id="character-target-div"></div>
+                        <div class="tianzige-grid">
+                            <div class="line horizontal"></div>
+                            <div class="line vertical"></div>
+                            <div class="line diagonal-1"></div>
+                            <div class="line diagonal-2"></div>
+                        </div>
+                    </div>
+                    <div class="controls">
+                        <button id="animateBtn" class="control-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                            </svg>
+                            演示笔顺
+                        </button>
+                        <button id="quizBtn" class="control-btn secondary">描红测验</button>
+                    </div>
+                </div>
+
+                <div class="info-panel">
+                    <div class="info-card pinyin-card">
+                        <h3>拼音 & 发音</h3>
+                        <div class="pinyin-display">
+                            <span id="pinyinText">--</span>
+                            <button id="audioBtn" class="audio-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="info-card meaning-card">
+                        <h3>含义 & 词汇</h3>
+                        <div id="meaningContent" class="meaning-content">
+                            <p class="placeholder">Enter a character to see details.</p>
+                        </div>
+                    </div>
+
+                    <div class="info-card stroke-card">
+                        <h3>笔画数量</h3>
+                        <div id="strokeContent" class="stroke-content">
+                            <p>总的笔画数: <span id="strokeCount">--</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="geminiscript.js"></script>
+</body>
+
+</html>
