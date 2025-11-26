@@ -73,7 +73,7 @@ function fetchCharData(char) {
             });
             html += `</div>`;
         } else {
-            html += `<p>No common idioms found in library.</p>`;
+            html += `<p>未在库中找到常见词语</p>`;
         }
     }
 
@@ -84,7 +84,7 @@ function fetchCharData(char) {
     // so we rely on what we have). 
     // We can add a "Radical" info.
     const radical = cnchar.radical(char);
-    html += `<p style="margin-top: 1rem;"><strong>Radical:</strong> ${radical}</p>`;
+    html += `<p style="margin-top: 1rem;"><strong>部首:</strong> ${radical}</p>`;
 
     meaningContent.innerHTML = html;
 }
